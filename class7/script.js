@@ -18,16 +18,19 @@
 //create our sequential object
 const model = tf.sequential();
 
-// set up the configuration of our hidden layer
+// create and set up the configuration of our hidden layer
+// dense means fully connected layer
 const hidden = tf.layers.dense({
-  units: 4,
+  units: 4, //number of nodes
   inputShape: [2],
   activation: "sigmoid",
 });
 
-// set up the configuration of our output layer
+// create and set up the configuration of our output layer
+//dense means fully connected layer
 const output = tf.layers.dense({
-  units: 3,
+  units: 1, //number of nodes
+  // inputShape is inferred from the previous layer, [4]
   activation: "sigmoid",
 });
 
@@ -40,9 +43,44 @@ model.add(output);
 const sdgOptimizer = tf.train.sgd(0.1);
 
 // configure our model compiler
-const config = {
+model.compile({
   optimizer: sdgOptimizer,
   loss: "meanSquaredError",
-};
+});
 
-model.compile(config);
+//dummy input samples
+const xs = tf.tensor2d([
+  [0, 0],
+  [0.5, 0.5],
+  [1, 1],
+]);
+
+// dummy target samples
+const ys = tf.tensor2d([[1], [0.5], [0]]);
+
+// .fit() returns a promise, meaning it executes asynchronously
+async function train() {
+  for (let i = 0; i < 1000; i++) {
+    const config = {
+      shuffle: true,
+      epochs: 10,
+    };
+    const response = await model.fit(xs, ys, config);
+    console.log(response.history.loss[0]);
+  }
+}
+
+// train 100 times, then do prediction
+train().then(() => {
+  console.log("training complete");
+  let outputs = model.predict(xs);
+  outputs.print();
+});
+
+// // example data
+// const xs = tf.tensor2d([
+//   [0.25, 0.92],
+//   [0.12, 0.3],
+//   [0.4, 0.74],
+//   [0.1, 0.22],
+// ]);
