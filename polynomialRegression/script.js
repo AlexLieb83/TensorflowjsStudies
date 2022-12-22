@@ -15,9 +15,9 @@
 let xVals = [];
 let yVals = [];
 
-let m, b;
+let a, b, c, d;
 
-const learningRate = 0.5;
+const learningRate = 0.1;
 const optimizer = tf.train.sgd(learningRate);
 
 function setup() {
@@ -25,8 +25,10 @@ function setup() {
 
   // give me a random num between 0 and 1, sort of like weights
   //m and b must be variables, because they will change based on where we click dots
-  m = tf.variable(tf.scalar(random(1)));
-  b = tf.variable(tf.scalar(random(1)));
+  a = tf.variable(tf.scalar(random(-1, 1)));
+  b = tf.variable(tf.scalar(random(-1, 1)));
+  c = tf.variable(tf.scalar(random(-1, 1)));
+  d = tf.variable(tf.scalar(random(-1, 1)));
 }
 
 function loss(preds, labels) {
@@ -39,8 +41,14 @@ function predict(x) {
   const xs = tf.tensor1d(x);
 
   //apply formula for a line to our tensor, ys are the predictions
-  //y = mx + b
-  const ys = xs.mul(m).add(b);
+
+  //y = ax^3 + bx^2 + cx + d
+  const ys = xs
+    .pow(tf.scalar(3))
+    .mul(a)
+    .add(xs.square().mul(b))
+    .add(xs.mul(c))
+    .add(d);
 
   return ys;
 }
@@ -78,17 +86,25 @@ function draw() {
     point(px, py);
   }
 
-  // our line
-  const lineX = [-1, 1];
-  const ys = tf.tidy(() => predict(lineX));
-  let lineY = ys.dataSync();
+  // our curved line
+  const curveX = [];
+  for (let x = -1; x <= 1.01; x += 0.05) {
+    curveX.push(x);
+  }
+  const ys = tf.tidy(() => predict(curveX));
+  let curveY = ys.dataSync();
   ys.dispose();
 
-  let x1 = map(lineX[0], -1, 1, 0, width);
-  let x2 = map(lineX[1], -1, 1, 0, width);
+  beginShape();
+  noFill();
+  stroke(255);
+  strokeWeight(2);
 
-  let y1 = map(lineY[0], -1, 1, height, 0);
-  let y2 = map(lineY[1], -1, 1, height, 0);
+  for (let i = 0; i < curveX.length; i++) {
+    let x = map(curveX[i], -1, 1, 0, width);
+    let y = map(curveY[i], -1, 1, height, 0);
+    vertex(x, y);
+  }
 
-  line(x1, y1, x2, y2);
+  endShape();
 }
