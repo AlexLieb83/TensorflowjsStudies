@@ -1,9 +1,9 @@
 let mobilenet;
-let classifier;
+let predictor;
 let video;
-let label = "";
-let hatButton;
-let remoteButton;
+let value = 0;
+let slider;
+let addButton;
 let trainButton;
 
 function modelReady() {
@@ -17,7 +17,7 @@ function videoReady() {
 function whileTraining(loss) {
   if (loss === null) {
     console.log("Training Complete");
-    classifier.classify(gotResults);
+    predictor.predict(gotResults);
   } else {
     console.log(loss);
   }
@@ -27,10 +27,8 @@ function gotResults(err, results) {
   if (err) {
     console.error(err);
   } else {
-    label = results[0].label;
-    let prob = results[0].confidence;
-
-    classifier.classify(gotResults);
+    value = results.value;
+    predictor.predict(gotResults);
   }
 }
 
@@ -47,31 +45,35 @@ function setup() {
   // creates image classification object
   mobilenet = ml5.featureExtractor("MobileNet", modelReady);
 
-  classifier = mobilenet.classification(video, videoReady);
+  predictor = mobilenet.regression(video, videoReady);
 
-  // add hat image button
-  hatButton = createButton("hat");
-  hatButton.mousePressed(function () {
-    classifier.addImage("hat");
+  slider = createSlider(0, 1, 0.5, 0.01);
+  slider.input(function () {
+    // console.log(slider.value());
+    // assign this image/feature to this certain slider value number
+    predictor.addImage(slider.value());
   });
 
-  // add remote image button
-  remoteButton = createButton("remote");
-  remoteButton.mousePressed(function () {
-    classifier.addImage("remote");
+  addButton = createButton("add example image");
+  addButton.mousePressed(function () {
+    // assign this image/feature to this certain slider value number
+    predictor.addImage(slider.value());
   });
 
   // add train button
   trainButton = createButton("train");
   trainButton.mousePressed(function () {
-    classifier.train(whileTraining);
+    predictor.train(whileTraining);
   });
 }
 
 function draw() {
   background(0);
   image(video, 0, 0);
+  rectMode(CENTER);
+  fill(255, 0, 200);
+  rect(value * width, height / 2, 50, 50);
   fill(255);
   textSize(32);
-  text(label, 10, height - 20);
+  text(value, 10, height - 20);
 }
