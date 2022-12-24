@@ -4,7 +4,7 @@ let label = "";
 
 function modelReady() {
   console.log("Model is Ready!");
-  mobilenet.classify(gotResults);
+  mobilenet.predict(gotResults);
 }
 
 function gotResults(err, results) {
@@ -12,16 +12,21 @@ function gotResults(err, results) {
     console.error(err);
   } else {
     label = results[0].label;
+    let prob = results[0].confidence;
 
     mobilenet.predict(gotResults);
   }
 }
 
+// function imageReady() {
+//   image(puffin, 0, 0, width, height);
+// }
+
 function setup() {
   createCanvas(640, 550);
-  background(0);
-  video = createCapture(VIDEO, imageReady);
+  video = createCapture(VIDEO);
   video.hide();
+  background(0);
 
   // creates image classification object
   mobilenet = ml5.imageClassifier("MobileNet", video, modelReady);
