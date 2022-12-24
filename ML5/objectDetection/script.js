@@ -2,7 +2,7 @@ let img;
 let detector;
 
 function preload() {
-  img = loadImage("images/penguin.jpg");
+  img = loadImage("images/couch.jpg");
   detector = ml5.objectDetector("cocossd");
 }
 
@@ -13,8 +13,7 @@ function gotDetections(error, results) {
   console.log(results);
   for (let i = 0; i < results.length; i++) {
     let object = results[i];
-    console.log(object.x, object.y, object.width, object.height);
-    stroke("green");
+    stroke(0, 255, 0);
     strokeWeight(4);
     noFill();
     rect(object.x, object.y, object.width, object.height);
