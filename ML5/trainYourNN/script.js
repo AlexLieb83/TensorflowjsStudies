@@ -14,10 +14,37 @@ function setup() {
     outputs: ["label"],
     task: "classification",
     debug: "true",
+    learningRate: 0.5,
   };
 
   model = ml5.neuralNetwork(options);
+  model.loadData("mouseClicks.json", dataLoaded);
+
   background(255);
+}
+
+function dataLoaded() {
+  console.log(model.data);
+  let data = model;
+  // let data = model.getData();
+  for (let i = 0; i < data.length; i++) {
+    let inputs = data[i].xs;
+    let target = data[i].ys;
+    stroke(0);
+    noFill();
+    ellipse(inputs.x, inputs.y, 24);
+    fill(0);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text(target.label, inputs.x, inputs.y);
+  }
+  state = "training";
+  console.log("starting training");
+  model.normalizeData();
+  let options = {
+    epochs: 200,
+  };
+  model.train(options, whileTraining, finishedTraining);
 }
 
 // change letter when we press key, so we can collect different groups of letters
@@ -35,6 +62,8 @@ function keyPressed() {
     // whileTraining executes every epoch
     // finishedTraining executes after training is all finished
     model.train(options, whileTraining, finishedTraining);
+  } else if (key === "s") {
+    model.saveData("mouseClicks");
   } else {
     targetLabel = key.toUpperCase();
   }
@@ -73,6 +102,7 @@ function mousePressed() {
     noStroke();
     textAlign(CENTER, CENTER);
     text(targetLabel, mouseX, mouseY);
+
     // when we are in prediction state, and we click mouse, we want the model to classify our click,
     //so basically tell me if it's a c cluster, d cluster, or e cluster
   } else if ((state = "prediction")) {
