@@ -1,3 +1,5 @@
+// NOTE - using older versions of p5 to make the site work
+
 // EMOJI Display
 
 // TODO - when nothing is shown, show smiling face emoji or something else
